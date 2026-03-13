@@ -52,9 +52,9 @@ npm test
 
 ```
 src/
-  components/     # Vue UI (menus, overlays, score display)
-  game/           # Canvas engine, collision, ball, paddle, bricks
+  components/     # Vue UI (TitleScreen, GameCanvas, overlays)
   composables/    # useGameState, useAudio
+  game/           # Canvas engine, collision, ball, paddle, bricks
   styles/         # Global CSS
 tests/            # Vitest tests
 public/           # Static assets, audio

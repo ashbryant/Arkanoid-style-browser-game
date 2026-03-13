@@ -1,22 +1,55 @@
 <template>
   <div class="webanoid-app">
-    <h1>Webanoid</h1>
-    <p>Loading...</p>
+    <TitleScreen v-if="isTitle" @start="handleStart" />
+    <div v-else-if="isPlaying" class="game-container">
+      <p class="placeholder">Game canvas coming in milestone 3</p>
+    </div>
+    <div v-else class="placeholder-state">
+      <p>State: {{ state }}</p>
+    </div>
   </div>
 </template>
 
 <script setup>
-// Placeholder - will be replaced in milestone 2
+import { useGameState } from './composables/useGameState'
+import TitleScreen from './components/TitleScreen.vue'
+
+const {
+  state,
+  isTitle,
+  isPlaying,
+  startGame,
+} = useGameState()
+
+function handleStart() {
+  startGame()
+}
 </script>
 
 <style scoped>
 .webanoid-app {
-  min-height: 100vh;
+  width: 100%;
+  height: 100vh;
+  background: #0a0a0a;
+  overflow: hidden;
+}
+
+.game-container {
+  width: 100%;
+  height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: #0a0a0a;
+  color: #00ff00;
+  font-family: 'Courier New', monospace;
+}
+
+.placeholder-state {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #00ff00;
   font-family: 'Courier New', monospace;
 }
