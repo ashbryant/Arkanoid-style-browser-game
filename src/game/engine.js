@@ -104,8 +104,10 @@ export function createGameLoop(canvas, ctx, state) {
           state.ball.vx = bounced.vx
           state.ball.vy = bounced.vy
           state.score = (state.score || 0) + getBrickScore(brick.type)
+          state.onScoreUpdate?.(state.score)
           const updated = applyBrickHit(brick)
           if (!updated) bricks.splice(i, 1)
+          if (bricks.length === 0) state.onLevelComplete?.()
           break
         }
       }

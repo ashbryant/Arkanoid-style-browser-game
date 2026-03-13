@@ -5,34 +5,47 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import {
   PLAYFIELD_WIDTH,
   PLAYFIELD_HEIGHT,
   WALL_THICKNESS,
   PADDLE_WIDTH,
-  PADDLE_HEIGHT,
 } from '../game/constants.js'
 import { createGameLoop, resizeCanvas } from '../game/engine.js'
 import { createPaddle } from '../game/paddle.js'
 import { createBallOnPaddle, launchBall } from '../game/ball.js'
 import { LEVELS } from '../game/levels.js'
 
+const props = defineProps({
+  levelIndex: { type: Number, default: 0 },
+  score: { type: Number, default: 0 },
+})
+
+const emit = defineEmits(['ballLost', 'levelComplete', 'updateScore'])
+
 const canvasRef = ref(null)
 const wrapperRef = ref(null)
 
 let stopLoop = null
 
-const paddle = createPaddle()
-const ball = createBallOnPaddle(paddle.x)
-
-const state = {
-  paddle,
-  ball,
-  bricks: LEVELS[0].map((b) => ({ ...b })),
-  score: 0,
-  input: { moveLeft: false, moveRight: false },
+function initState() {
+  const paddle = createPaddle()
+  const ball = createBallOnPaddle(paddle.x)
+  const level = LEVELS[Math.min(props.levelIndex, LEVELS.length - 1)] || LEVELS[0]
+  return {
+    paddle,
+    ball,
+    bricks: level.map((b) => ({ ...b })),
+    score: props.score,
+    input: { moveLeft: false, moveRight: false },
+    onBallLost: () => emit('ballLost'),
+    onScoreUpdate: (score) => emit('updateScore', score),
+    onLevelComplete: () => emit('levelComplete'),
+  }
 }
+
+const state = initState()
 
 function launchBallIfNeeded() {
   if (state.ball && !state.ball.launched) {
@@ -80,12 +93,21 @@ function handleMouseMove(e) {
   }
 }
 
+function resetBall() {
+  state.ball = createBallOnPaddle(state.paddle.x)
+}
+
 function start() {
   if (!canvasRef.value) return
   const ctx = canvasRef.value.getContext('2d')
   if (!ctx) return
   stopLoop = createGameLoop(canvasRef.value, ctx, state)
 }
+
+defineExpose({
+  resetBall,
+  getScore: () => state.score,
+})
 
 function stop() {
   if (stopLoop) {
@@ -99,6 +121,13 @@ function onResize() {
     resizeCanvas(canvasRef.value, PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT)
   }
 }
+
+watch(() => props.levelIndex, () => {
+  const level = LEVELS[Math.min(props.levelIndex, LEVELS.length - 1)] || LEVELS[0]
+  state.bricks = level.map((b) => ({ ...b }))
+  state.ball = createBallOnPaddle(state.paddle.x)
+  state.score = props.score
+})
 
 onMounted(() => {
   onResize()
