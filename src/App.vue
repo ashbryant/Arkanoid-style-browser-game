@@ -1,10 +1,14 @@
 <template>
   <div class="webanoid-app">
-    <TitleScreen v-if="isTitle" @start="handleStart" />
-    <div v-else-if="isPlaying || isGameOver || isLevelTransition" class="game-container">
+    <TitleScreen
+      v-if="isTitle"
+      :high-scores="highScores"
+      @start="handleStart"
+    />
+    <div v-else-if="isPlaying || isGameOver || isLevelTransition || isHighScoreEntry" class="game-container">
       <GameHUD :score="score" :lives="lives" :level-label="levelIndex + 1" />
       <GameCanvas
-        v-if="!isGameOver && !isLevelTransition"
+        v-if="!isGameOver && !isLevelTransition && !isHighScoreEntry"
         ref="gameCanvasRef"
         :key="gameKey"
         :level-index="levelIndex"
@@ -16,6 +20,11 @@
       <LevelTransition
         v-if="isLevelTransition"
         :level="levelIndex + 1"
+      />
+      <HighScoreEntry
+        v-if="isHighScoreEntry"
+        :score="score"
+        @submit="handleHighScoreSubmit"
       />
       <GameOver
         v-if="isGameOver"
@@ -37,6 +46,8 @@ import GameCanvas from './components/GameCanvas.vue'
 import GameHUD from './components/GameHUD.vue'
 import GameOver from './components/GameOver.vue'
 import LevelTransition from './components/LevelTransition.vue'
+import HighScoreEntry from './components/HighScoreEntry.vue'
+import { loadHighScores, qualifiesForHighScore, addHighScore } from './stores/highScores.js'
 
 const {
   state,
@@ -44,9 +55,12 @@ const {
   isPlaying,
   isGameOver,
   isLevelTransition,
+  isHighScoreEntry,
   startGame,
   goToGameOver,
   goToLevelTransition,
+  goToHighScoreEntry,
+  goToTitle,
 } = useGameState()
 
 const gameCanvasRef = ref(null)
@@ -54,11 +68,16 @@ const gameKey = ref(0)
 const score = ref(0)
 const lives = ref(3)
 const levelIndex = ref(0)
+const highScores = ref(loadHighScores())
 
 function handleBallLost() {
   lives.value--
   if (lives.value <= 0) {
-    goToGameOver()
+    if (qualifiesForHighScore(score.value)) {
+      goToHighScoreEntry()
+    } else {
+      goToGameOver()
+    }
   } else {
     nextTick(() => gameCanvasRef.value?.resetBall())
   }
@@ -81,6 +100,12 @@ function handleStart() {
   lives.value = 3
   levelIndex.value = 0
   startGame()
+}
+
+function handleHighScoreSubmit(initials) {
+  addHighScore(initials, score.value)
+  highScores.value = loadHighScores()
+  goToGameOver()
 }
 
 function handleRetry() {

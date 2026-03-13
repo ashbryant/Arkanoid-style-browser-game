@@ -28,4 +28,11 @@ describe('useGameState', () => {
     goToTitle()
     expect(state.value).toBe('title')
   })
+
+  it('transitions to highScoreEntry on goToHighScoreEntry', () => {
+    const { state, isHighScoreEntry, goToHighScoreEntry } = useGameState()
+    goToHighScoreEntry()
+    expect(state.value).toBe('highScoreEntry')
+    expect(isHighScoreEntry.value).toBe(true)
+  })
 })

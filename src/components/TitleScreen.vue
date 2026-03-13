@@ -3,6 +3,7 @@
     <div class="title-box">
       <h1 class="game-title">WEBANOID</h1>
       <p class="tagline">BREAK THE WEB</p>
+      <HighScoreTable v-if="highScores.length" :scores="highScores" />
       <button class="start-btn" @click="$emit('start')">
         PRESS START
       </button>
@@ -12,8 +13,13 @@
 </template>
 
 <script setup>
-defineEmits(['start'])
+import HighScoreTable from './HighScoreTable.vue'
+
+defineProps({
+  highScores: { type: Array, default: () => [] },
+})
 </script>
+
 
 <style scoped>
 .title-screen {
