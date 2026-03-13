@@ -1,0 +1,81 @@
+/**
+ * Canvas game engine - render loop and playfield drawing.
+ * Handles requestAnimationFrame loop and basic playfield rendering.
+ */
+import { PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT, WALL_THICKNESS } from './constants.js'
+
+/**
+ * Create and run the game render loop.
+ * @param {HTMLCanvasElement} canvas
+ * @param {Object} ctx - Canvas 2D context
+ * @param {Object} state - Game state (paddle, ball, bricks, etc.)
+ * @returns {Function} Cleanup function to stop the loop
+ */
+export function createGameLoop(canvas, ctx, state) {
+  let animationId = null
+
+  function drawPlayfield() {
+    const { width, height } = canvas
+
+    // Clear
+    ctx.fillStyle = '#0a0a0a'
+    ctx.fillRect(0, 0, width, height)
+
+    // Play area (walls)
+    ctx.fillStyle = '#0d1f0d'
+    ctx.fillRect(0, 0, width, height)
+
+    // Top wall
+    ctx.fillStyle = '#00ff00'
+    ctx.fillRect(0, 0, width, WALL_THICKNESS)
+
+    // Left wall
+    ctx.fillRect(0, 0, WALL_THICKNESS, height)
+
+    // Right wall
+    ctx.fillRect(width - WALL_THICKNESS, 0, WALL_THICKNESS, height)
+
+    // Bottom (death zone)
+    ctx.fillStyle = '#330000'
+    ctx.fillRect(0, height - WALL_THICKNESS, width, WALL_THICKNESS)
+  }
+
+  function tick() {
+    drawPlayfield()
+    animationId = requestAnimationFrame(tick)
+  }
+
+  tick()
+
+  return function stop() {
+    if (animationId !== null) {
+      cancelAnimationFrame(animationId)
+      animationId = null
+    }
+  }
+}
+
+/**
+ * Resize canvas to fit container while maintaining aspect ratio.
+ * @param {HTMLCanvasElement} canvas
+ * @param {number} logicalWidth
+ * @param {number} logicalHeight
+ */
+export function resizeCanvas(canvas, logicalWidth = PLAYFIELD_WIDTH, logicalHeight = PLAYFIELD_HEIGHT) {
+  const container = canvas.parentElement
+  if (!container) return
+
+  const scaleX = container.clientWidth / logicalWidth
+  const scaleY = container.clientHeight / logicalHeight
+  const scale = Math.min(scaleX, scaleY, 4)
+
+  const displayWidth = Math.floor(logicalWidth * scale)
+  const displayHeight = Math.floor(logicalHeight * scale)
+
+  canvas.width = logicalWidth
+  canvas.height = logicalHeight
+  canvas.style.width = `${displayWidth}px`
+  canvas.style.height = `${displayHeight}px`
+  canvas.style.imageRendering = 'pixelated'
+  canvas.style.imageRendering = 'crisp-edges'
+}
