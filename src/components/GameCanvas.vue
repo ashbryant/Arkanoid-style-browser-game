@@ -1,23 +1,60 @@
 <template>
-  <div class="game-canvas-wrapper" ref="wrapperRef">
+  <div class="game-canvas-wrapper" ref="wrapperRef" @mousemove="handleMouseMove">
     <canvas ref="canvasRef" class="game-canvas"></canvas>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT } from '../game/constants.js'
+import { ref, onMounted, onUnmounted } from 'vue'
+import {
+  PLAYFIELD_WIDTH,
+  PLAYFIELD_HEIGHT,
+  WALL_THICKNESS,
+  PADDLE_WIDTH,
+} from '../game/constants.js'
 import { createGameLoop, resizeCanvas } from '../game/engine.js'
+import { createPaddle } from '../game/paddle.js'
 
 const canvasRef = ref(null)
 const wrapperRef = ref(null)
 
 let stopLoop = null
 
-// Placeholder state - will be extended in later milestones
 const state = {
-  paddle: { x: 0, y: 0 },
+  paddle: createPaddle(),
   ball: { x: 0, y: 0 },
+  input: { moveLeft: false, moveRight: false },
+}
+
+function handleKeyDown(e) {
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+    state.input.moveLeft = true
+    e.preventDefault()
+  }
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+    state.input.moveRight = true
+    e.preventDefault()
+  }
+}
+
+function handleKeyUp(e) {
+  if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+    state.input.moveLeft = false
+  }
+  if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+    state.input.moveRight = false
+  }
+}
+
+function handleMouseMove(e) {
+  if (!canvasRef.value || !wrapperRef.value) return
+  const rect = canvasRef.value.getBoundingClientRect()
+  const scaleX = canvasRef.value.width / rect.width
+  const mouseX = (e.clientX - rect.left) * scaleX
+  const halfPaddle = PADDLE_WIDTH / 2
+  const minX = WALL_THICKNESS
+  const maxX = PLAYFIELD_WIDTH - WALL_THICKNESS - PADDLE_WIDTH
+  state.paddle.x = Math.max(minX, Math.min(maxX, mouseX - halfPaddle))
 }
 
 function start() {
@@ -44,11 +81,15 @@ onMounted(() => {
   onResize()
   start()
   window.addEventListener('resize', onResize)
+  window.addEventListener('keydown', handleKeyDown)
+  window.addEventListener('keyup', handleKeyUp)
 })
 
 onUnmounted(() => {
   stop()
   window.removeEventListener('resize', onResize)
+  window.removeEventListener('keydown', handleKeyDown)
+  window.removeEventListener('keyup', handleKeyUp)
 })
 </script>
 

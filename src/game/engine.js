@@ -3,12 +3,14 @@
  * Handles requestAnimationFrame loop and basic playfield rendering.
  */
 import { PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT, WALL_THICKNESS } from './constants.js'
+import { PADDLE_WIDTH, PADDLE_HEIGHT } from './constants.js'
+import { updatePaddle } from './paddle.js'
 
 /**
  * Create and run the game render loop.
  * @param {HTMLCanvasElement} canvas
  * @param {Object} ctx - Canvas 2D context
- * @param {Object} state - Game state (paddle, ball, bricks, etc.)
+ * @param {Object} state - Game state (paddle, ball, bricks, input, etc.)
  * @returns {Function} Cleanup function to stop the loop
  */
 export function createGameLoop(canvas, ctx, state) {
@@ -40,8 +42,23 @@ export function createGameLoop(canvas, ctx, state) {
     ctx.fillRect(0, height - WALL_THICKNESS, width, WALL_THICKNESS)
   }
 
+  function drawPaddle() {
+    const { paddle } = state
+    if (!paddle) return
+    ctx.fillStyle = '#00ff00'
+    ctx.fillRect(paddle.x, paddle.y, PADDLE_WIDTH, PADDLE_HEIGHT)
+  }
+
   function tick() {
+    // Update paddle from input
+    const input = state.input || {}
+    const dx = (input.moveRight ? 1 : 0) - (input.moveLeft ? 1 : 0)
+    if (dx !== 0 && state.paddle) {
+      state.paddle = updatePaddle(state.paddle, dx)
+    }
+
     drawPlayfield()
+    drawPaddle()
     animationId = requestAnimationFrame(tick)
   }
 
