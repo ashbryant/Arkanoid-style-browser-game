@@ -22,6 +22,7 @@ import { createGameLoop, resizeCanvas } from '../game/engine.js'
 import { createPaddle } from '../game/paddle.js'
 import { createBallOnPaddle, launchBall } from '../game/ball.js'
 import { LEVELS } from '../game/levels.js'
+import { sounds } from '../composables/useAudio.js'
 
 const props = defineProps({
   levelIndex: { type: Number, default: 0 },
@@ -45,9 +46,17 @@ function initState() {
     bricks: level.map((b) => ({ ...b })),
     score: props.score,
     input: { moveLeft: false, moveRight: false },
-    onBallLost: () => emit('ballLost'),
+    onBallLost: () => {
+      sounds.ballLost()
+      emit('ballLost')
+    },
     onScoreUpdate: (score) => emit('updateScore', score),
-    onLevelComplete: () => emit('levelComplete'),
+    onLevelComplete: () => {
+      sounds.levelClear()
+      emit('levelComplete')
+    },
+    onPaddleHit: () => sounds.paddle(),
+    onBrickHit: () => sounds.brick(),
   }
 }
 

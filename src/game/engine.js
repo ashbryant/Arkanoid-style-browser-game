@@ -88,6 +88,7 @@ export function createGameLoop(canvas, ctx, state) {
 
       // Paddle collision - variable bounce angle
       if (state.paddle && hitPaddle(state.ball, state.paddle)) {
+        state.onPaddleHit?.()
         const hitRatio = (state.ball.x - state.paddle.x) / PADDLE_WIDTH
         const angle = getPaddleBounceAngle(hitRatio)
         const speed = BALL_SPEED
@@ -100,6 +101,7 @@ export function createGameLoop(canvas, ctx, state) {
       for (let i = bricks.length - 1; i >= 0; i--) {
         const brick = bricks[i]
         if (hitBrickCollision(state.ball, brick)) {
+          state.onBrickHit?.()
           const bounced = bounceOffBrick(state.ball, brick)
           state.ball.vx = bounced.vx
           state.ball.vy = bounced.vy
@@ -112,8 +114,8 @@ export function createGameLoop(canvas, ctx, state) {
         }
       }
 
-      if (state.onBallLost && state.ball.lost) {
-        state.onBallLost()
+      if (state.ball.lost) {
+        state.onBallLost?.()
       }
     } else if (state.ball && state.paddle) {
       state.ball.x = state.paddle.x + PADDLE_WIDTH / 2
