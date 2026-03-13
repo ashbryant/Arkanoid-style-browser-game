@@ -1,5 +1,6 @@
 <template>
   <div class="webanoid-app">
+    <RotatePrompt />
     <TitleScreen
       v-if="isTitle"
       :high-scores="highScores"
@@ -47,6 +48,7 @@ import GameHUD from './components/GameHUD.vue'
 import GameOver from './components/GameOver.vue'
 import LevelTransition from './components/LevelTransition.vue'
 import HighScoreEntry from './components/HighScoreEntry.vue'
+import RotatePrompt from './components/RotatePrompt.vue'
 import { loadHighScores, qualifiesForHighScore, addHighScore } from './stores/highScores.js'
 
 const {

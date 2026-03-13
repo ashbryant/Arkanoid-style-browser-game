@@ -1,5 +1,11 @@
 <template>
-  <div class="game-canvas-wrapper" ref="wrapperRef" @mousemove="handleMouseMove">
+  <div
+    class="game-canvas-wrapper"
+    ref="wrapperRef"
+    @mousemove="handlePointerMove"
+    @touchmove.prevent="handleTouchMove"
+    @touchstart.prevent="handleTouchStart"
+  >
     <canvas ref="canvasRef" class="game-canvas"></canvas>
   </div>
 </template>
@@ -79,17 +85,35 @@ function handleKeyUp(e) {
   }
 }
 
-function handleMouseMove(e) {
-  if (!canvasRef.value || !wrapperRef.value) return
+function pointerToCanvasX(clientX) {
+  if (!canvasRef.value || !wrapperRef.value) return null
   const rect = canvasRef.value.getBoundingClientRect()
   const scaleX = canvasRef.value.width / rect.width
-  const mouseX = (e.clientX - rect.left) * scaleX
+  return (clientX - rect.left) * scaleX
+}
+
+function handlePointerMove(e) {
+  const x = pointerToCanvasX(e.clientX)
+  if (x == null) return
   const halfPaddle = PADDLE_WIDTH / 2
   const minX = WALL_THICKNESS
   const maxX = PLAYFIELD_WIDTH - WALL_THICKNESS - PADDLE_WIDTH
-  state.paddle.x = Math.max(minX, Math.min(maxX, mouseX - halfPaddle))
+  state.paddle.x = Math.max(minX, Math.min(maxX, x - halfPaddle))
   if (state.ball && !state.ball.launched) {
     state.ball.x = state.paddle.x + halfPaddle
+  }
+}
+
+function handleTouchMove(e) {
+  if (e.touches.length > 0) {
+    handlePointerMove(e.touches[0])
+  }
+}
+
+function handleTouchStart(e) {
+  if (e.touches.length > 0) {
+    handlePointerMove(e.touches[0])
+    launchBallIfNeeded()
   }
 }
 
@@ -153,6 +177,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   background: #0a0a0a;
+  touch-action: none;
 }
 
 .game-canvas {
