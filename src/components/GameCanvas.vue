@@ -16,6 +16,7 @@ import {
 import { createGameLoop, resizeCanvas } from '../game/engine.js'
 import { createPaddle } from '../game/paddle.js'
 import { createBallOnPaddle, launchBall } from '../game/ball.js'
+import { LEVELS } from '../game/levels.js'
 
 const canvasRef = ref(null)
 const wrapperRef = ref(null)
@@ -28,6 +29,8 @@ const ball = createBallOnPaddle(paddle.x)
 const state = {
   paddle,
   ball,
+  bricks: LEVELS[0].map((b) => ({ ...b })),
+  score: 0,
   input: { moveLeft: false, moveRight: false },
 }
 

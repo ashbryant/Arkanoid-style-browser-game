@@ -5,6 +5,8 @@ import {
   hitRightWall,
   hitBottom,
   bounceOffWalls,
+  hitBrick,
+  getPaddleBounceAngle,
 } from '../src/game/collision.js'
 
 describe('collision', () => {
@@ -41,6 +43,31 @@ describe('collision', () => {
     })
     it('returns false when ball is above bottom', () => {
       expect(hitBottom({ x: 160, y: 200 })).toBe(false)
+    })
+  })
+
+  describe('hitBrick', () => {
+    it('returns true when ball overlaps brick', () => {
+      const ball = { x: 50, y: 30 }
+      const brick = { x: 40, y: 20, width: 32, height: 12 }
+      expect(hitBrick(ball, brick)).toBe(true)
+    })
+    it('returns false when ball is far from brick', () => {
+      const ball = { x: 10, y: 10 }
+      const brick = { x: 100, y: 100, width: 32, height: 12 }
+      expect(hitBrick(ball, brick)).toBe(false)
+    })
+  })
+
+  describe('getPaddleBounceAngle', () => {
+    it('returns 0 for center hit', () => {
+      expect(getPaddleBounceAngle(0.5)).toBe(0)
+    })
+    it('returns negative for left hit', () => {
+      expect(getPaddleBounceAngle(0)).toBeLessThan(0)
+    })
+    it('returns positive for right hit', () => {
+      expect(getPaddleBounceAngle(1)).toBeGreaterThan(0)
     })
   })
 

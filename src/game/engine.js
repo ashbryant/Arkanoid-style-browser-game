@@ -6,6 +6,9 @@ import { PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT, WALL_THICKNESS } from './constants.j
 import { PADDLE_WIDTH, PADDLE_HEIGHT, BALL_RADIUS } from './constants.js'
 import { updatePaddle } from './paddle.js'
 import { updateBall } from './ball.js'
+import { hitBrick as hitBrickCollision, bounceOffBrick, hitPaddle, getPaddleBounceAngle } from './collision.js'
+import { hitBrick as applyBrickHit, getBrickScore } from './bricks.js'
+import { BALL_SPEED } from './constants.js'
 
 /**
  * Create and run the game render loop.
@@ -59,6 +62,18 @@ export function createGameLoop(canvas, ctx, state) {
     ctx.fill()
   }
 
+  function drawBricks() {
+    const bricks = state.bricks || []
+    bricks.forEach((brick) => {
+      const hue = brick.type === 1 ? 120 : brick.type === 2 ? 45 : 0
+      ctx.fillStyle = `hsl(${hue}, 80%, 50%)`
+      ctx.fillRect(brick.x, brick.y, brick.width, brick.height)
+      ctx.strokeStyle = '#000'
+      ctx.lineWidth = 1
+      ctx.strokeRect(brick.x, brick.y, brick.width, brick.height)
+    })
+  }
+
   function tick() {
     // Update paddle from input
     const input = state.input || {}
@@ -67,15 +82,43 @@ export function createGameLoop(canvas, ctx, state) {
       state.paddle = updatePaddle(state.paddle, dx)
     }
 
-    // Update ball (movement and wall bounce)
+    // Update ball
     if (state.ball && state.ball.launched) {
       state.ball = updateBall(state.ball)
+
+      // Paddle collision - variable bounce angle
+      if (state.paddle && hitPaddle(state.ball, state.paddle)) {
+        const hitRatio = (state.ball.x - state.paddle.x) / PADDLE_WIDTH
+        const angle = getPaddleBounceAngle(hitRatio)
+        const speed = BALL_SPEED
+        state.ball.vx = Math.sin(angle) * speed
+        state.ball.vy = -Math.cos(angle) * speed
+      }
+
+      // Brick collisions
+      const bricks = state.bricks || []
+      for (let i = bricks.length - 1; i >= 0; i--) {
+        const brick = bricks[i]
+        if (hitBrickCollision(state.ball, brick)) {
+          const bounced = bounceOffBrick(state.ball, brick)
+          state.ball.vx = bounced.vx
+          state.ball.vy = bounced.vy
+          state.score = (state.score || 0) + getBrickScore(brick.type)
+          const updated = applyBrickHit(brick)
+          if (!updated) bricks.splice(i, 1)
+          break
+        }
+      }
+
+      if (state.onBallLost && state.ball.lost) {
+        state.onBallLost()
+      }
     } else if (state.ball && state.paddle) {
-      // Ball stuck on paddle - follow paddle x
       state.ball.x = state.paddle.x + PADDLE_WIDTH / 2
     }
 
     drawPlayfield()
+    drawBricks()
     drawPaddle()
     drawBall()
     animationId = requestAnimationFrame(tick)
