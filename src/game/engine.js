@@ -81,7 +81,7 @@ export function createGameLoop(canvas, ctx, state) {
   }
 
   function tick() {
-    // Update paddle from input
+    // Input: keyboard delta drives paddle; mouse/touch set position directly in GameCanvas
     const input = state.input || {}
     const dx = (input.moveRight ? 1 : 0) - (input.moveLeft ? 1 : 0)
     if (dx !== 0 && state.paddle) {

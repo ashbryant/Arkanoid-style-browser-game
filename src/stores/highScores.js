@@ -1,6 +1,7 @@
 /**
  * High score persistence - localStorage for top 10.
  */
+// localStorage key for top 10 scores; each entry has { initials, score }
 const STORAGE_KEY = 'webanoid-highscores'
 const MAX_ENTRIES = 10
 

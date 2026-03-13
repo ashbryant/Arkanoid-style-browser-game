@@ -63,7 +63,7 @@ export function hitBrick(ball, brick) {
 
 /**
  * Determine bounce direction when ball hits brick.
- * Reflects based on which side was hit (smallest penetration).
+ * Uses smallest overlap to decide which axis to reflect (avoids corner glitches).
  */
 export function bounceOffBrick(ball, brick) {
   const ballLeft = ball.x - BALL_RADIUS
