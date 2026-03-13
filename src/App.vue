@@ -1,10 +1,10 @@
 <template>
   <div class="webanoid-app">
     <TitleScreen v-if="isTitle" @start="handleStart" />
-    <div v-else-if="isPlaying || isGameOver" class="game-container">
+    <div v-else-if="isPlaying || isGameOver || isLevelTransition" class="game-container">
       <GameHUD :score="score" :lives="lives" :level-label="levelIndex + 1" />
       <GameCanvas
-        v-if="!isGameOver"
+        v-if="!isGameOver && !isLevelTransition"
         ref="gameCanvasRef"
         :key="gameKey"
         :level-index="levelIndex"
@@ -12,6 +12,10 @@
         @ball-lost="handleBallLost"
         @level-complete="handleLevelComplete"
         @update-score="score = $event"
+      />
+      <LevelTransition
+        v-if="isLevelTransition"
+        :level="levelIndex + 1"
       />
       <GameOver
         v-if="isGameOver"
@@ -32,15 +36,17 @@ import TitleScreen from './components/TitleScreen.vue'
 import GameCanvas from './components/GameCanvas.vue'
 import GameHUD from './components/GameHUD.vue'
 import GameOver from './components/GameOver.vue'
+import LevelTransition from './components/LevelTransition.vue'
 
 const {
   state,
   isTitle,
   isPlaying,
   isGameOver,
+  isLevelTransition,
   startGame,
   goToGameOver,
-  goToTitle,
+  goToLevelTransition,
 } = useGameState()
 
 const gameCanvasRef = ref(null)
@@ -63,7 +69,11 @@ function handleLevelComplete() {
   if (levelIndex.value >= 5) {
     levelIndex.value = 0
   }
-  nextTick(() => gameCanvasRef.value?.resetBall())
+  goToLevelTransition()
+  setTimeout(() => {
+    startGame()
+    nextTick(() => gameCanvasRef.value?.resetBall())
+  }, 2000)
 }
 
 function handleStart() {
