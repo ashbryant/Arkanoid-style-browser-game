@@ -3,8 +3,9 @@
  * Handles requestAnimationFrame loop and basic playfield rendering.
  */
 import { PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT, WALL_THICKNESS } from './constants.js'
-import { PADDLE_WIDTH, PADDLE_HEIGHT } from './constants.js'
+import { PADDLE_WIDTH, PADDLE_HEIGHT, BALL_RADIUS } from './constants.js'
 import { updatePaddle } from './paddle.js'
+import { updateBall } from './ball.js'
 
 /**
  * Create and run the game render loop.
@@ -49,6 +50,15 @@ export function createGameLoop(canvas, ctx, state) {
     ctx.fillRect(paddle.x, paddle.y, PADDLE_WIDTH, PADDLE_HEIGHT)
   }
 
+  function drawBall() {
+    const { ball } = state
+    if (!ball) return
+    ctx.fillStyle = '#ffffff'
+    ctx.beginPath()
+    ctx.arc(ball.x, ball.y, BALL_RADIUS, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
   function tick() {
     // Update paddle from input
     const input = state.input || {}
@@ -57,8 +67,17 @@ export function createGameLoop(canvas, ctx, state) {
       state.paddle = updatePaddle(state.paddle, dx)
     }
 
+    // Update ball (movement and wall bounce)
+    if (state.ball && state.ball.launched) {
+      state.ball = updateBall(state.ball)
+    } else if (state.ball && state.paddle) {
+      // Ball stuck on paddle - follow paddle x
+      state.ball.x = state.paddle.x + PADDLE_WIDTH / 2
+    }
+
     drawPlayfield()
     drawPaddle()
+    drawBall()
     animationId = requestAnimationFrame(tick)
   }
 

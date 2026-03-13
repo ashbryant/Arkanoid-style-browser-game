@@ -11,28 +11,45 @@ import {
   PLAYFIELD_HEIGHT,
   WALL_THICKNESS,
   PADDLE_WIDTH,
+  PADDLE_HEIGHT,
 } from '../game/constants.js'
 import { createGameLoop, resizeCanvas } from '../game/engine.js'
 import { createPaddle } from '../game/paddle.js'
+import { createBallOnPaddle, launchBall } from '../game/ball.js'
 
 const canvasRef = ref(null)
 const wrapperRef = ref(null)
 
 let stopLoop = null
 
+const paddle = createPaddle()
+const ball = createBallOnPaddle(paddle.x)
+
 const state = {
-  paddle: createPaddle(),
-  ball: { x: 0, y: 0 },
+  paddle,
+  ball,
   input: { moveLeft: false, moveRight: false },
 }
 
+function launchBallIfNeeded() {
+  if (state.ball && !state.ball.launched) {
+    state.ball = launchBall(state.ball)
+  }
+}
+
 function handleKeyDown(e) {
+  if (e.key === ' ' || e.key === 'Spacebar') {
+    launchBallIfNeeded()
+    e.preventDefault()
+  }
   if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
     state.input.moveLeft = true
+    launchBallIfNeeded()
     e.preventDefault()
   }
   if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
     state.input.moveRight = true
+    launchBallIfNeeded()
     e.preventDefault()
   }
 }
@@ -55,6 +72,9 @@ function handleMouseMove(e) {
   const minX = WALL_THICKNESS
   const maxX = PLAYFIELD_WIDTH - WALL_THICKNESS - PADDLE_WIDTH
   state.paddle.x = Math.max(minX, Math.min(maxX, mouseX - halfPaddle))
+  if (state.ball && !state.ball.launched) {
+    state.ball.x = state.paddle.x + halfPaddle
+  }
 }
 
 function start() {
