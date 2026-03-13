@@ -12,6 +12,9 @@
       <span class="label">LEVEL</span>
       <span class="value">{{ levelLabel }}</span>
     </div>
+    <div v-if="levelName" class="hud-row level-name">
+      <span class="value">{{ levelName }}</span>
+    </div>
   </div>
 </template>
 
@@ -20,6 +23,7 @@ defineProps({
   score: { type: Number, default: 0 },
   lives: { type: Number, default: 3 },
   levelLabel: { type: [String, Number], default: '' },
+  levelName: { type: String, default: '' },
 })
 </script>
 
@@ -52,5 +56,10 @@ defineProps({
 .value {
   font-size: 1rem;
   font-weight: bold;
+}
+
+.level-name .value {
+  font-size: 0.65rem;
+  opacity: 0.7;
 }
 </style>

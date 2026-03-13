@@ -14,6 +14,9 @@ const createMockContext = () => ({
   fill: vi.fn(),
   stroke: vi.fn(),
   strokeRect: vi.fn(),
+  fillText: vi.fn(),
+  font: '',
+  textAlign: '',
   get canvas() {
     return { width: 320, height: 240 }
   },

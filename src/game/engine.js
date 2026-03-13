@@ -71,6 +71,12 @@ export function createGameLoop(canvas, ctx, state) {
       ctx.strokeStyle = '#000'
       ctx.lineWidth = 1
       ctx.strokeRect(brick.x, brick.y, brick.width, brick.height)
+      if (brick.label) {
+        ctx.fillStyle = 'rgba(0,0,0,0.5)'
+        ctx.font = '6px monospace'
+        ctx.textAlign = 'center'
+        ctx.fillText(brick.label, brick.x + brick.width / 2, brick.y + brick.height / 2 + 2)
+      }
     })
   }
 

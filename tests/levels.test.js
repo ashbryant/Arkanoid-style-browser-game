@@ -12,6 +12,7 @@ describe('levels', () => {
       height: 12,
       type: 1,
       hits: 1,
+      label: 'div',
     })
   })
 

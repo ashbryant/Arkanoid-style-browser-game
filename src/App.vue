@@ -8,7 +8,12 @@
     />
     <div v-else-if="isPlaying || isGameOver || isLevelTransition || isHighScoreEntry" class="game-container">
       <AudioControls />
-      <GameHUD :score="score" :lives="lives" :level-label="levelIndex + 1" />
+      <GameHUD
+        :score="score"
+        :lives="lives"
+        :level-label="levelIndex + 1"
+        :level-name="levelNames[levelIndex] || ''"
+      />
       <GameCanvas
         v-if="!isGameOver && !isLevelTransition && !isHighScoreEntry"
         ref="gameCanvasRef"
@@ -52,6 +57,8 @@ import HighScoreEntry from './components/HighScoreEntry.vue'
 import RotatePrompt from './components/RotatePrompt.vue'
 import AudioControls from './components/AudioControls.vue'
 import { loadHighScores, qualifiesForHighScore, addHighScore } from './stores/highScores.js'
+import { LEVEL_NAMES } from './game/levels.js'
+
 
 const {
   state,
@@ -73,6 +80,7 @@ const score = ref(0)
 const lives = ref(3)
 const levelIndex = ref(0)
 const highScores = ref(loadHighScores())
+const levelNames = LEVEL_NAMES
 
 function handleBallLost() {
   lives.value--
